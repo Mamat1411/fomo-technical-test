@@ -1,9 +1,15 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,4 +25,62 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+        // Failed Validation
+        $exceptions->renderable(function (ValidationException $e, Request $request) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Validation Failed',
+                'errors' => $e->errors(),
+            ], 422);
+        });
+
+        // Route Model Binding Not Found
+        $exceptions->renderable(function (ModelNotFoundException $e, Request $request) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data Not Found',
+            ], 404);
+        });
+
+        // Route Not Found
+        $exceptions->renderable(function (NotFoundHttpException $e, Request $request) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Data Not Found',
+            ], 404);
+        });
+
+        // Unauthenticated
+        $exceptions->renderable(function (AuthenticationException $e, Request $request) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Unauthenticated',
+            ], 401);
+        });
+
+        // Forbidden Access (Authorization)
+        $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'Forbidden',
+            ], 403);
+        });
+
+        // Other HTTP Errors
+        $exceptions->renderable(function (HttpException $e, Request $request) {
+            $code = $e->getStatusCode();
+
+            return response()->json([
+                'status' => $code,
+                'message' => $e->getMessage() ?: 'HTTP Error',
+            ], $code);
+        });
+
+        // Fallback 500 - Unexpected Errors
+        $exceptions->renderable(function (Throwable $th, Request $request) {
+            return response()->json([
+                'status' => 500,
+                'message' => app()->hasDebugModeEnabled() ? ($th->getMessage() ?: 'Internal Server Error') : 'Internal Server Error',
+            ], 500);
+        });
     })->create();
