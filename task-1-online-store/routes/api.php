@@ -15,4 +15,5 @@ Route::get('/up', function () {
     ]);
 });
 
-Route::apiResource('/product', ProductController::class);
+Route::post('/products', [ProductController::class, 'index']);
+Route::apiResource('/product', ProductController::class)->only(['show', 'store', 'update', 'destroy']);
