@@ -12,7 +12,7 @@ class StoreInventoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,8 @@ class StoreInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "product_id" => ['required', 'string', 'uuid', 'unique:inventories', 'exists:products,id'],
+            "quantity" => ['required', 'numeric', 'min:0']
         ];
     }
 }
