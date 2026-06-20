@@ -2,18 +2,17 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreInventoryRequest extends FormRequest
+class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role == UserRole::Admin;
+        return true;
     }
 
     /**
@@ -24,8 +23,10 @@ class StoreInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "product_id" => ['required', 'string', 'uuid', 'unique:inventories', 'exists:products,id'],
-            "quantity" => ['required', 'numeric', 'min:0']
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email:dns', 'unique:users'],
+            'password' => ['required', 'min:8', 'confirmed'],
+            'password_confirmation' => ['required', 'min:8']
         ];
     }
 }
