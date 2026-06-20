@@ -13,7 +13,7 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role == UserRole::Admin;
+        return auth()->check() && auth()->user()?->role == UserRole::Admin;
     }
 
     /**

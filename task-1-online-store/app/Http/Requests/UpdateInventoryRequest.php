@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\UserRole;
 use App\Models\Inventory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +15,7 @@ class UpdateInventoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        return auth()->check() && auth()->user()?->role = UserRole::Admin;
     }
 
     /**
